@@ -69,21 +69,23 @@ interface AccordionItemProps {
   value: string;
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
 }
 
-const AccordionItemContext = React.createContext<{ value: string } | undefined>(undefined);
+const AccordionItemContext = React.createContext<{ value: string; disabled?: boolean } | undefined>(undefined);
 
-export function AccordionItem({ value, children, className }: AccordionItemProps) {
+export function AccordionItem({ value, children, className, disabled = false }: AccordionItemProps) {
   return (
-    <AccordionItemContext.Provider value={{ value }}>
-      <div className={cn("border-b", className)}>{children}</div>
+    <AccordionItemContext.Provider value={{ value, disabled }}>
+      <div className={cn("border-b", className, disabled && "opacity-50")}>{children}</div>
     </AccordionItemContext.Provider>
   );
 }
 
 export function AccordionTrigger({ className, children }: { className?: string; children: React.ReactNode }) {
   const { value: accordionValue, onValueChange, type } = useAccordion();
-  const { value: itemValue } = React.useContext(AccordionItemContext)!;
+  const itemContext = React.useContext(AccordionItemContext)!;
+  const { value: itemValue, disabled } = itemContext;
 
   const isOpen = type === "single" ? accordionValue === itemValue : (accordionValue as string[]).includes(itemValue);
 
@@ -91,9 +93,11 @@ export function AccordionTrigger({ className, children }: { className?: string; 
     <div className="flex">
       <button
         type="button"
-        onClick={() => onValueChange?.(itemValue as any)}
+        disabled={disabled}
+        onClick={() => !disabled && onValueChange?.(itemValue as any)}
         className={cn(
-          "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
+          "flex flex-1 items-center justify-between py-4 font-medium transition-all [&[data-state=open]>svg]:rotate-180",
+          disabled && "cursor-not-allowed opacity-50",
           className
         )}
         data-state={isOpen ? "open" : "closed"}
@@ -107,14 +111,55 @@ export function AccordionTrigger({ className, children }: { className?: string; 
 
 export function AccordionContent({ className, children }: { className?: string; children: React.ReactNode }) {
   const { value: accordionValue, type } = useAccordion();
-  const { value: itemValue } = React.useContext(AccordionItemContext)!;
+  const itemContext = React.useContext(AccordionItemContext)!;
+  const { value: itemValue } = itemContext;
 
   const isOpen = type === "single" ? accordionValue === itemValue : (accordionValue as string[]).includes(itemValue);
+  const [height, setHeight] = React.useState(0);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
-  if (!isOpen) return null;
+  React.useEffect(() => {
+    if (contentRef.current) {
+      if (isOpen) {
+        // Set height to scrollHeight for smooth animation
+        const scrollHeight = contentRef.current.scrollHeight;
+        setHeight(scrollHeight);
+        // After animation, set to auto for responsive behavior
+        setTimeout(() => {
+          if (contentRef.current) {
+            contentRef.current.style.height = 'auto';
+          }
+        }, 200);
+      } else {
+        // Set to fixed height before animating to 0
+        if (contentRef.current) {
+          contentRef.current.style.height = contentRef.current.scrollHeight + 'px';
+        }
+        setTimeout(() => {
+          setHeight(0);
+        }, 10);
+      }
+    }
+  }, [isOpen]);
+
+  // Check if animation is disabled
+  const isAnimateNone = className?.includes('animate-none');
+  const durationClass = className?.includes('duration-') ? '' : 'duration-200';
 
   return (
-    <div className={cn("overflow-hidden text-sm transition-all animate-in slide-in-from-top-1", className)}>
+    <div 
+      ref={contentRef}
+      className={cn(
+        "overflow-hidden text-sm transition-all", 
+        !isAnimateNone && durationClass,
+        className
+      )}
+      style={{ 
+        height: isAnimateNone ? (isOpen ? 'auto' : 0) : height,
+        display: 'block'
+      }}
+      data-state={isOpen ? "open" : "closed"}
+    >
       <div className="pb-4 pt-0">{children}</div>
     </div>
   );

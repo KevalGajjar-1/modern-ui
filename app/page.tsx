@@ -551,16 +551,6 @@ export default function Home() {
                   <Link href="/docs/installation" className="flex items-center gap-2">Installation Guide <ArrowRight className="h-4 w-4" /></Link>
                 </Button>
               </div>
-              {/* CLI snippet */ }
-              <div className="flex items-center gap-3 bg-white/85 dark:bg-white/5 backdrop-blur-md border border-gray-200/80 dark:border-white/10 px-5 py-3 rounded-full text-sm font-mono shadow-md">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-muted-foreground">npx shadcn-ui@latest init</span>
-                <button onClick={ handleCopy } className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
-                  { copied
-                    ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-                    : <Copy className="h-3.5 w-3.5 text-gray-400" /> }
-                </button>
-              </div>
               {/* Stats */ }
               <div className="flex flex-wrap gap-10 justify-center pt-4">
                 { [
@@ -577,7 +567,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
         {/* ══════════ COMPONENT SHOWCASE ══════════ */ }
         <section className="container mx-auto px-4 py-20">
           <div className="text-center mb-12">

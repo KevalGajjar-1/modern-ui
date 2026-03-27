@@ -135,7 +135,7 @@ export function CollapsibleTrigger({
         "text-sm font-medium text-foreground",
         "transition-colors duration-150 select-none",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50 p-3",
         className
       ) }
       { ...props }
